@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 import prisma from "../../../lib/db";
-import rateLimit from "express-rate-limit"; // Import the rate limiter
+import rateLimit from "express-rate-limit";
 
 // Create a rate limiter for the registration endpoint
 const registrationLimiter = rateLimit({
@@ -53,9 +53,9 @@ export default async function handler(req, res) {
         return res.status(500).json({ message: "Server configuration error." });
       }
 
-      // Send verification email
+      // Set up the email transporter
       const transporter = nodemailer.createTransport({
-        service: "gmail", // or your email provider
+        service: "gmail", // Change to your email provider
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
@@ -69,13 +69,12 @@ export default async function handler(req, res) {
         { expiresIn: "1h" }
       );
 
-      const verificationUrl = `https://contact-management-backend.vercel.app/api/auth/verify?token=${verificationToken}`;
-
+      const verificationUrl = `${process.env.BASE_URL}/api/auth/verify?token=${verificationToken}`;
 
       // Sending the verification email
       try {
         await transporter.sendMail({
-          from: process.env.EMAIL_USER, // Add sender's email address
+          from: process.env.EMAIL_USER,
           to: email,
           subject: "Verify Your Email",
           text: `Please verify your email by clicking on the following link: ${verificationUrl}`,

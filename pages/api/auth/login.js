@@ -1,8 +1,7 @@
-// pages/api/auth/login.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../../../lib/db";
-import rateLimit from "express-rate-limit"; // Import the rate limiter
+import rateLimit from "express-rate-limit";
 
 // Create a rate limiter for the login endpoint
 const loginLimiter = rateLimit({
