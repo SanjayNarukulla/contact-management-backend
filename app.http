@@ -1,0 +1,162 @@
+### Authentication Routes
+
+# Register a new user
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "securepassword123"
+}
+
+### Login a user
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "securepassword123"
+}
+
+### Verify OTP
+POST http://localhost:3000/api/auth/verifyOtp
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "otp": "123456"
+}
+
+### Verify account
+POST http://localhost:3000/api/auth/verify
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": "user_id_here"
+}
+
+### Initiate password reset
+POST http://localhost:3000/api/auth/resetPassword
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com"
+}
+
+### Confirm password reset
+POST http://localhost:3000/api/auth/confirmReset
+Content-Type: application/json
+
+{
+  "token": "reset_token_here",
+  "newPassword": "newsecurepassword123"
+}
+
+### Delete user
+DELETE http://localhost:3000/api/auth/deleteUser
+Authorization: Bearer {{token}}
+
+### Get all users (Admin access)
+GET http://localhost:3000/api/auth/users
+Authorization: Bearer {{token}}
+
+
+
+
+
+
+
+
+
+### Contact Management Routes
+
+# Add a new contact
+POST http://localhost:3000/api/contacts/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "John Doe",
+  "phone": "123-456-7890",
+  "email": "johndoe@example.com"
+}
+
+
+
+
+
+### Create multiple contacts
+POST http://localhost:3000/api/auth/contacts/batch
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "contacts": [
+    {
+      "name": "Alice Smith",
+      "email": "alice@example.com",
+      "phone": "+1987654321",
+      "address": "456 Elm St, City, Country",
+      "timezone": "America/Los_Angeles"
+    },
+    {
+      "name": "Bob Johnson",
+      "email": "bob@example.com",
+      "phone": "+1098765432",
+      "address": "789 Pine St, City, Country",
+      "timezone": "Europe/London"
+    }
+  ]
+}
+
+
+
+### Delete multiple contacts in batch
+DELETE http://localhost:3000/api/contacts/batchDelete
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+
+
+{
+  "contactIds": ["id1", "id2"]
+}
+
+
+
+
+### Get contacts added on a specific date
+GET http://localhost:3000/api/contacts/date?date=2024-10-25
+Authorization: Bearer {{token}}
+
+
+
+
+### Delete a contact by ID
+DELETE http://localhost:3000/api/contacts/delete?id=contact_id_here
+Authorization: Bearer {{token}}
+
+
+
+### Fetch a contact by ID
+GET http://localhost:3000/api/contacts/get?id=contact_id_here
+Authorization: Bearer {{token}}
+
+
+
+### Update a contact by ID
+PUT http://localhost:3000/api/contacts/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "id": "contact_id_here",
+  "name": "Jane Doe",
+  "phone": "987-654-3210",
+  "email": "janedoe@example.com"
+}
+
+
