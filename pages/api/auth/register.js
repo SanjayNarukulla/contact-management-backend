@@ -69,7 +69,8 @@ export default async function handler(req, res) {
         { expiresIn: "1h" }
       );
 
-      const verificationUrl = `http://localhost:3000/api/auth/verify?token=${verificationToken}`;
+      const verificationUrl = `https://contact-management-backend.vercel.app/api/auth/verify?token=${verificationToken}`;
+
 
       // Sending the verification email
       try {
