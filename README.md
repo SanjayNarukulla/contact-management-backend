@@ -1,40 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Contact Management System
+
+This Contact Management System is built with **Next.js** and uses **Prisma** as an ORM for database management. It supports user authentication, contact management, and secure RESTful API operations, making use of **JWT** for authentication.
+
+## Features
+- **User Authentication:** Registration, login, OTP verification, password reset, and user deletion.
+- **Contact Management:** Add, update, delete, and batch operations for managing contacts.
+- **API-Driven Backend:** Modular API routes for user and contact management.
+- **Prisma ORM:** Integrated ORM for seamless database handling.
+
+## Tech Stack
+- **Next.js:** For frontend and backend API routes.
+- **Prisma:** ORM for seamless database interaction.
+- **JWT Authentication:** For secure user sessions and protected routes.
+
+## Project Structure
+pages/ ├── api/ │ ├── auth/ # Contains API routes for user authentication │ └── contacts/ # Contains API routes for contact management lib/ └── # Houses utility functions for database configuration and authentication
+
+
+## API Endpoints
+
+### Authentication Routes
+- `POST /api/auth/register`: Registers a new user.
+- `POST /api/auth/login`: Authenticates a user and issues a JWT.
+- `POST /api/auth/verifyOtp`: Verifies OTP sent to the user.
+- `POST /api/auth/verify`: Verifies the user's account (e.g., email verification).
+- `POST /api/auth/resetPassword`: Initiates password reset.
+- `POST /api/auth/confirmReset`: Confirms password reset with token.
+- `DELETE /api/auth/deleteUser`: Deletes the authenticated user.
+- `GET /api/auth/users`: Retrieves a list of all users (for admin access).
+
+### Contact Management Routes
+- `POST /api/contacts/add`: Adds a new contact for the authenticated user.
+- `POST /api/contacts/batch`: Adds multiple contacts at once.
+- `DELETE /api/contacts/batchDelete`: Deletes multiple contacts in a batch.
+- `GET /api/contacts/date`: Retrieves contacts added on a specific date.
+- `DELETE /api/contacts/delete`: Deletes a single contact by ID.
+- `GET /api/contacts/get`: Fetches a contact by ID.
+- `PUT /api/contacts/update`: Updates an existing contact by ID.
+
+Examples of all API endpoints are provided in the `app.http` file.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Ensure you have **Node.js** installed.
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/SanjayNarukulla/contact-management-backend.git
+   cd contact-management-backend
+
+-**Install dependencies**:
 
 ```bash
+npm install
+
+
+Set up environment variables:
+
+Create a .env file in the project root.
+Add necessary environment variables:
+plaintext
+
+```bash
+DATABASE_URL="your_database_url"
+JWT_SECRET="your_jwt_secret"
+Replace "your_database_url" and "your_jwt_secret" with actual values.
+Run Prisma migrations:
+
+```bash
+npx prisma migrate dev
+Run the development server:
+
+```bash
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser to view the application.
+Prisma Setup
+Any schema changes in schema.prisma require a migration:
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+```bash
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+npx prisma migrate dev
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+### Learn More
+For more information, visit:
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js Documentation
+Prisma Documentation
+JSON Web Token (JWT)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+### Deployment
+To deploy, consider using Vercel, which provides seamless integration for Next.js apps.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+For deployment steps, see the Next.js deployment documentation.
