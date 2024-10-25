@@ -6,9 +6,18 @@ export default async function handler(req, res) {
     await isAuthenticated(req, res, async () => {
       const { contactIds } = req.body; // Expecting an array of contact IDs
 
+      // Validate input
       if (!Array.isArray(contactIds) || contactIds.length === 0) {
         return res.status(400).json({
           message: "Invalid input: contactIds must be a non-empty array.",
+        });
+      }
+
+      // Optional: Validate that all contactIds are of the expected type (e.g., strings)
+      const invalidIds = contactIds.filter((id) => typeof id !== "string"); // Change 'string' if your ID type is different
+      if (invalidIds.length > 0) {
+        return res.status(400).json({
+          message: "Invalid input: all contactIds must be strings.",
         });
       }
 
@@ -26,16 +35,20 @@ export default async function handler(req, res) {
         // Check how many contacts were deleted
         if (deletedContacts.count === 0) {
           return res.status(404).json({
-            message: "No contacts found to delete.",
+            message: "No contacts found matching the provided IDs.",
           });
         }
 
-        // Log the deleted contact IDs for tracking
-        console.log(`Deleted contacts IDs: ${contactIds.join(", ")}`);
+        // Log the deleted contact IDs along with user ID
+        console.log(
+          `User ID: ${req.user.id}, Deleted contacts IDs: ${contactIds.join(
+            ", "
+          )}`
+        );
 
         return res.status(200).json({
           message: `${deletedContacts.count} contacts deleted successfully.`,
-          deletedContactCount: deletedContacts.count, // Optionally return the count of deleted contacts
+          deletedContactCount: deletedContacts.count, // Return the count of deleted contacts
         });
       } catch (error) {
         console.error("Error deleting contacts:", error);

@@ -1,4 +1,3 @@
-// pages/api/auth/verifyOtp.js
 import prisma from "../../../lib/db";
 import bcrypt from "bcrypt";
 
@@ -14,20 +13,24 @@ export default async function handler(req, res) {
     // Normalize email
     const normalizedEmail = email.toLowerCase();
 
-    // Check OTP from the database
-    const storedOtp = await prisma.otp.findUnique({
-      where: { email: normalizedEmail },
-    });
-
-    if (
-      !storedOtp ||
-      storedOtp.otp !== otp ||
-      Date.now() > new Date(storedOtp.expires)
-    ) {
-      return res.status(400).json({ message: "Invalid or expired OTP." });
-    }
-
     try {
+      // Check OTP from the database
+      const storedOtp = await prisma.otp.findUnique({
+        where: { email: normalizedEmail },
+      });
+
+      if (
+        !storedOtp ||
+        storedOtp.otp !== otp ||
+        Date.now() > new Date(storedOtp.expires)
+      ) {
+        // Clear expired OTP from the database
+        if (storedOtp) {
+          await prisma.otp.delete({ where: { email: normalizedEmail } });
+        }
+        return res.status(400).json({ message: "Invalid or expired OTP." });
+      }
+
       // Check if the user exists
       const user = await prisma.user.findUnique({
         where: { email: normalizedEmail },

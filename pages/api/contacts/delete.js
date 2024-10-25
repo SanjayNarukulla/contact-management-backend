@@ -7,9 +7,15 @@ export default async function handler(req, res) {
     await isAuthenticated(req, res, async () => {
       const { id } = req.body;
 
+      // Validate the contact ID format
       if (!id) {
         return res.status(400).json({ message: "Contact ID is required." });
       }
+
+      // Optional: Add ID format validation (e.g., check if it's a valid UUID)
+      // if (!isValidUUID(id)) {
+      //   return res.status(400).json({ message: "Invalid Contact ID format." });
+      // }
 
       try {
         // Check if the contact exists and belongs to the user
@@ -17,13 +23,14 @@ export default async function handler(req, res) {
           where: { id },
         });
 
-        if (!contact || contact.userId !== req.user.id) {
-          return res
-            .status(404)
-            .json({
-              message:
-                "Contact not found or you don't have permission to delete it.",
-            });
+        if (!contact) {
+          return res.status(404).json({ message: "Contact not found." });
+        }
+
+        if (contact.userId !== req.user.id) {
+          return res.status(403).json({
+            message: "You don't have permission to delete this contact.",
+          });
         }
 
         // Proceed with deletion
@@ -31,11 +38,19 @@ export default async function handler(req, res) {
           where: { id },
         });
 
-        return res
-          .status(200)
-          .json({ message: "Contact deleted successfully.", deletedContact });
+        // Optionally, return only necessary fields
+        const { userId, ...deletedContactResponse } = deletedContact;
+
+        return res.status(200).json({
+          message: "Contact deleted successfully.",
+          deletedContact: deletedContactResponse,
+        });
       } catch (error) {
-        console.error("Error deleting contact:", error);
+        console.error("Error deleting contact:", {
+          error: error.message,
+          userId: req.user.id,
+          contactId: id,
+        });
         return res.status(500).json({ message: "Internal server error." });
       }
     });

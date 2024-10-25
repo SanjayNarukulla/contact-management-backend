@@ -1,4 +1,3 @@
-// pages/api/auth/verify.js
 import jwt from "jsonwebtoken";
 import prisma from "../../../lib/db";
 
@@ -14,11 +13,15 @@ export default async function handler(req, res) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Check if the user is already verified
+      // Check if the user exists
       const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      // Check if the user is already verified
       if (user.is_verified) {
-        // Redirect to a confirmation page if already verified
-        return res.redirect("/confirmation?message=Email is already verified.");
+        return res.status(200).json({ message: "Email is already verified." });
       }
 
       // Update the user's verification status
@@ -34,11 +37,24 @@ export default async function handler(req, res) {
         },
       });
 
-      // Redirect to a confirmation page upon successful verification
-      return res.redirect("/confirmation?message=Email verified successfully!");
+      // Return success response
+      return res.status(200).json({
+        message: "Email verified successfully!",
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          is_verified: updatedUser.is_verified,
+        },
+      });
     } catch (error) {
       console.error("Token verification error: ", error);
-      return res.status(400).json({ message: "Invalid or expired token." });
+      if (error.name === "JsonWebTokenError") {
+        return res.status(400).json({ message: "Invalid token." });
+      }
+      if (error.name === "TokenExpiredError") {
+        return res.status(400).json({ message: "Token expired." });
+      }
+      return res.status(500).json({ message: "Internal Server Error." });
     }
   } else {
     res.setHeader("Allow", ["GET"]);

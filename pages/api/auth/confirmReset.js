@@ -1,4 +1,3 @@
-// pages/api/auth/confirmReset.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../../../lib/db";
@@ -70,12 +69,14 @@ export default async function handler(req, res) {
       } else if (error.name === "JsonWebTokenError") {
         return res.status(400).json({ message: "Invalid token." });
       } else {
-        console.error("Server error: ", error);
-        return res.status(500).json({ message: "Server error." });
+        console.error("Server error: ", error); // Logging unexpected errors
+        return res.status(500).json({ message: "Internal server error." });
       }
     }
   } else {
     res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return res
+      .status(405)
+      .json({ message: `Method ${req.method} Not Allowed` });
   }
 }

@@ -10,25 +10,48 @@ export default async function handler(req, res) {
       try {
         const contacts = await prisma.contact.findMany({
           where: { userId },
+          select: {
+            // Explicitly select only necessary fields
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            address: true,
+            timezone: true,
+            created_at: true,
+            updated_at: true,
+          },
         });
 
         // Map the contacts to include only desired fields and format timestamps
         const formattedContacts = contacts.map((contact) => {
           const contactTimezone = contact.timezone || "UTC"; // Default to UTC if no timezone is set
+
+          // Validate timezone
           if (!moment.tz.zone(contactTimezone)) {
-            console.log("Valid Timezones:", moment.tz.names()); // Log all valid timezones for debugging
-            throw new Error("Invalid contact timezone.");
+            console.error("Invalid contact timezone:", contactTimezone);
+            // Fall back to UTC if invalid
+            return {
+              id: contact.id,
+              name: contact.name,
+              email: contact.email,
+              phone: contact.phone,
+              address: contact.address,
+              timezone: "UTC",
+              createdAt: moment(contact.created_at).tz("UTC").format(),
+              updatedAt: moment(contact.updated_at).tz("UTC").format(),
+            };
           }
 
           return {
-            id: contact.id, // Keep the id
+            id: contact.id,
             name: contact.name,
             email: contact.email,
             phone: contact.phone,
             address: contact.address,
             timezone: contact.timezone,
-            createdAt: moment(contact.created_at).tz(contactTimezone).format(), // Convert to contact's timezone
-            updatedAt: moment(contact.updated_at).tz(contactTimezone).format(), // Convert to contact's timezone
+            createdAt: moment(contact.created_at).tz(contactTimezone).format(),
+            updatedAt: moment(contact.updated_at).tz(contactTimezone).format(),
           };
         });
 

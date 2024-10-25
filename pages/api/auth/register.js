@@ -4,12 +4,46 @@ import bcrypt from "bcrypt";
 import prisma from "../../../lib/db";
 import rateLimit from "express-rate-limit";
 
+// Environment variables check
+if (
+  !process.env.EMAIL_USER ||
+  !process.env.EMAIL_PASS ||
+  !process.env.JWT_SECRET ||
+  !process.env.BASE_URL
+) {
+  throw new Error("Missing environment variables for email or JWT.");
+}
+
 // Create a rate limiter for the registration endpoint
 const registrationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 requests per windowMs
   message: "Too many registration attempts, please try again later.",
 });
+
+// Set up the email transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail", // Change to your email provider
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Function to send verification email
+const sendVerificationEmail = async (email, verificationUrl) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Verify Your Email",
+      text: `Please verify your email by clicking on the following link: ${verificationUrl}`,
+    });
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send verification email.");
+  }
+};
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -44,24 +78,6 @@ export default async function handler(req, res) {
         },
       });
 
-      // Validate environment variables
-      if (
-        !process.env.EMAIL_USER ||
-        !process.env.EMAIL_PASS ||
-        !process.env.JWT_SECRET
-      ) {
-        return res.status(500).json({ message: "Server configuration error." });
-      }
-
-      // Set up the email transporter
-      const transporter = nodemailer.createTransport({
-        service: "gmail", // Change to your email provider
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
       // Create a verification token
       const verificationToken = jwt.sign(
         { id: user.id },
@@ -73,17 +89,9 @@ export default async function handler(req, res) {
 
       // Sending the verification email
       try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Verify Your Email",
-          text: `Please verify your email by clicking on the following link: ${verificationUrl}`,
-        });
+        await sendVerificationEmail(email, verificationUrl);
       } catch (error) {
-        console.error("Error sending verification email:", error);
-        return res
-          .status(500)
-          .json({ message: "Failed to send verification email." });
+        return res.status(500).json({ message: error.message });
       }
 
       return res.status(201).json({
@@ -92,6 +100,6 @@ export default async function handler(req, res) {
     });
   } else {
     res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
 }

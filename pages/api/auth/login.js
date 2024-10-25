@@ -3,6 +3,11 @@ import jwt from "jsonwebtoken";
 import prisma from "../../../lib/db";
 import rateLimit from "express-rate-limit";
 
+// Environment variables check
+if (!process.env.JWT_SECRET) {
+  throw new Error("Missing JWT secret in environment variables.");
+}
+
 // Create a rate limiter for the login endpoint
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -22,6 +27,11 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: "Invalid credentials." });
       }
 
+      // Check if user is verified
+      if (!user.is_verified) {
+        return res.status(403).json({ message: "Email not verified." });
+      }
+
       // Check password
       const isPasswordValid = await bcrypt.compare(
         password,
@@ -39,6 +49,6 @@ export default async function handler(req, res) {
     });
   } else {
     res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
 }

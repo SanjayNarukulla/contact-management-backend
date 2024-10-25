@@ -1,11 +1,12 @@
 import prisma from "../../../lib/db";
 import { isAuthenticated } from "../../../lib/auth";
 import { validateContact } from "../../../utils/validation";
-import moment from "moment-timezone"; // Importing moment for timezone validation
+import moment from "moment-timezone";
 
-// Function to validate timezone
+const validTimezones = moment.tz.names();
+
 const isValidTimezone = (timezone) => {
-  return moment.tz.names().includes(timezone);
+  return validTimezones.includes(timezone);
 };
 
 export default async function handler(req, res) {
@@ -13,7 +14,6 @@ export default async function handler(req, res) {
     await isAuthenticated(req, res, async () => {
       const { name, email, phone, address, timezone } = req.body;
 
-      // Validate input using the validateContact function
       const errors = validateContact({
         name,
         email,
@@ -26,20 +26,18 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: errors.join(", ") });
       }
 
-      try {
-        // Validate the provided timezone
-        if (
-          !timezone ||
-          typeof timezone !== "string" ||
-          !isValidTimezone(timezone)
-        ) {
-          return res.status(400).json({ message: "Invalid timezone." });
-        }
+      if (
+        !timezone ||
+        typeof timezone !== "string" ||
+        !isValidTimezone(timezone)
+      ) {
+        return res.status(400).json({ message: "Invalid timezone." });
+      }
 
-        // Get the current date and time in the user's specified timezone
-        const currentTime = moment.tz(timezone); // Current time in the specified timezone
-        const createdAtUTC = currentTime.clone().utc().toISOString(); // Convert to UTC
-        const updatedAtUTC = createdAtUTC; // Set updated time to created time for initial creation
+      try {
+        const currentTime = moment.tz(timezone);
+        const createdAtUTC = currentTime.clone().utc().toISOString();
+        const updatedAtUTC = createdAtUTC;
 
         const newContact = await prisma.contact.create({
           data: {
@@ -48,19 +46,21 @@ export default async function handler(req, res) {
             phone,
             address,
             timezone,
-            userId: req.user.id, // Associate contact with the authenticated user
-            created_at: createdAtUTC, // Store created_at in UTC format
-            updated_at: updatedAtUTC, // Store updated_at in UTC format
+            userId: req.user.id,
+            created_at: createdAtUTC,
+            updated_at: updatedAtUTC,
           },
         });
 
-        // Send success response with the new contact
+        // Optionally convert createdAtUTC back to local time
+        const createdLocalTime = currentTime.format("YYYY-MM-DD HH:mm:ss");
+
         return res.status(201).json({
           message: "Contact created successfully!",
-          contact: newContact,
+          contact: { ...newContact, createdLocalTime },
         });
       } catch (error) {
-        console.error("Error adding contact:", error);
+        console.error(`Error adding contact for user ${req.user.id}:`, error);
         return res.status(500).json({
           message:
             process.env.NODE_ENV === "development"
