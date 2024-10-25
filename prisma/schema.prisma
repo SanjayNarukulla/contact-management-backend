@@ -1,0 +1,41 @@
+// prisma/schema.prisma
+
+datasource db {
+    provider = "postgresql" // Change this to "mysql" if you're using MySQL
+    url      = env("DATABASE_URL") // Make sure to set this in your .env file
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id             Int      @id @default(autoincrement())
+    email          String   @unique
+    password_hash  String
+    is_verified     Boolean  @default(false)
+    created_at     DateTime @default(now())
+    updated_at     DateTime @updatedAt
+    contacts       Contact[]
+}
+
+model Contact {
+    id         Int      @id @default(autoincrement())
+    name       String
+    email      String   @unique
+    phone      String
+    address    String
+    timezone   String
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    user       User     @relation(fields: [userId], references: [id])
+    userId     Int
+}z
+
+// Create a new model in your Prisma schema (schema.prisma)
+model Otp {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  otp        String
+  expires    DateTime
+}
