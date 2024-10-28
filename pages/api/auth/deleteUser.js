@@ -1,3 +1,4 @@
+//pages/api/auth/deleteUser.js
 import prisma from "../../../lib/db";
 import jwt from "jsonwebtoken";
 

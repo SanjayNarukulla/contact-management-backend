@@ -1,3 +1,4 @@
+//pages/api/auth/verify.js
 import jwt from "jsonwebtoken";
 import prisma from "../../../lib/db";
 

@@ -1,3 +1,4 @@
+//pages/api/auth/verifyOtp.js
 import prisma from "../../../lib/db";
 import bcrypt from "bcrypt";
 
